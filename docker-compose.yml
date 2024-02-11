@@ -1,0 +1,30 @@
+version: "3"
+services:
+  database:
+    image: golang:1.22-alpine3.19
+    command:
+      go run /mock-db/main.go
+    ports:
+      - "1212:1212"
+    volumes:
+      - ./mock-db/:/mock-db
+  database-migrations:
+    image: alpine:3.19
+    #image: ubuntu:20.04
+    command:
+      wget -q --tries=1 http://database:1212/db
+    depends_on:
+      - database
+    restart: on-failure
+  web-service:
+    image: golang:1.22-alpine3.19
+    command:
+      go run /web/main.go
+    volumes:
+      - ./web-service/:/web
+    ports:
+      - "8080:8080"
+    depends_on:
+      database-migrations:
+        condition: service_completed_successfully
+
