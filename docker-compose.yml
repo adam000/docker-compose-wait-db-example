@@ -10,9 +10,8 @@ services:
       - ./mock-db/:/mock-db
   database-migrations:
     image: alpine:3.19
-    #image: ubuntu:20.04
     command:
-      wget -q --tries=1 http://database:1212/db
+      wget --no-verbose --tries=1 --spider http://database:1212/db
     depends_on:
       - database
     restart: on-failure
@@ -27,4 +26,9 @@ services:
     depends_on:
       database-migrations:
         condition: service_completed_successfully
-
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
